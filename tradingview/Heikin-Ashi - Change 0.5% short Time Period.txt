@@ -1,0 +1,28 @@
+//@version=4
+strategy("Heikin-Ashi - Change 0.5% short Time Period", shorttitle="Heikin-Ashi - Change 0.5% short Time Period", overlay=true)
+
+// Calculate 0.5% price change
+priceChange = close / close[1] - 1
+
+// Buy and Sell Signals
+buyp = priceChange >= 0.005
+sellp = priceChange <= -0.005
+
+// Initialize position and track the current position
+var int position = na
+
+// Strategy entry conditions
+buy_condition = buyp and (na(position) or position == -1)
+sell_condition = sellp and (na(position) or position == 1)
+
+if buy_condition
+    strategy.entry("Buy", strategy.long)
+    position := 1
+
+if sell_condition
+    strategy.entry("Sell", strategy.short)
+    position := -1
+
+// Plot Buy and Sell signals using plotshape
+plotshape(series=buy_condition, title="Buy Signal", location=location.belowbar, color=color.green, style=shape.triangleup, size=size.small)
+plotshape(series=sell_condition, title="Sell Signal", location=location.abovebar, color=color.red, style=shape.triangledown, size=size.small)

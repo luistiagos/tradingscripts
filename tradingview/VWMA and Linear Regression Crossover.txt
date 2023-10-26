@@ -1,0 +1,27 @@
+//@version=4
+study(title="VWMA and Linear Regression Crossover", shorttitle="VWMA-LR", overlay=true)
+
+// Set the default VWMA and Linear Regression length to 14
+length = input(14, title="Length")
+
+// Calculate VWMA
+sum = 0.0
+volSum = 0.0
+for i = 0 to length - 1
+    sum := sum + close[i] * volume[i]
+    volSum := volSum + volume[i]
+vwma = sum / volSum
+
+// Calculate Linear Regression
+lr = linreg(close, length, 0)
+
+// Plot VWMA and Linear Regression
+plot(vwma, color=color.blue, title="VWMA")
+plot(lr, color=color.red, title="Linear Regression")
+
+// Buy and Sell Signals
+buySignal = crossover(lr, vwma)
+sellSignal = crossunder(lr, vwma)
+
+plotshape(buySignal, style=shape.triangleup, location=location.belowbar, color=color.green, title="Buy Signal")
+plotshape(sellSignal, style=shape.triangledown, location=location.abovebar, color=color.red, title="Sell Signal")
