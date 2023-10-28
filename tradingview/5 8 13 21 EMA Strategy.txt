@@ -1,0 +1,32 @@
+//@version=4
+strategy(title="EMA Crossover Strategy", shorttitle="EMA Crossover", overlay=true)
+
+// Define input for EMA lengths
+ema5_length = input(5, title="EMA 5 Length")
+ema8_length = input(8, title="EMA 8 Length")
+ema13_length = input(13, title="EMA 13 Length")
+ema21_length = input(21, title="EMA 21 Length")
+
+// Calculate EMAs
+ema5 = ema(close, ema5_length)
+ema8 = ema(close, ema8_length)
+ema13 = ema(close, ema13_length)
+ema21 = ema(close, ema21_length)
+
+// Plot the EMAs on the chart
+plot(ema5, title="EMA5", color=color.blue, linewidth=2)
+plot(ema8, title="EMA8", color=color.orange, linewidth=2)
+plot(ema13, title="EMA13", color=color.green, linewidth=2)
+plot(ema21, title="EMA21", color=color.red, linewidth=2)
+
+// Create buy and sell signals
+buy_signal = crossover(ema5, ema13) and crossover(ema5, ema21) and crossover(ema8, ema13) and crossover(ema8, ema21) 
+sell_signal = crossunder(ema5, ema13) and crossunder(ema5, ema21) and crossunder(ema8, ema13) and crossunder(ema8, ema21)
+
+// Plot buy and sell signals on the chart
+plotshape(buy_signal, style=shape.triangleup, location=location.belowbar, color=color.green, title="Buy Signal")
+plotshape(sell_signal, style=shape.triangledown, location=location.abovebar, color=color.red, title="Sell Signal")
+
+// Backtest strategy
+strategy.entry("Buy", strategy.long, when = buy_signal)
+strategy.entry("Sell", strategy.short, when = sell_signal)

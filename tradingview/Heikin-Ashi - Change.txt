@@ -1,0 +1,55 @@
+//@version=4
+strategy("Heikin-Ashi - Change Price", shorttitle="Heikin-Ashi - Change Price", overlay=true)
+
+length = input(0.01, title="Value")
+rsi_length = input(50, title="RSI Value")
+
+// Calculate 0.1% price change
+priceChange = close / close[1] - 1
+
+// Stoch RSI settings
+lengthRSI = input(14, title="Stoch RSI Length")
+smoothK = input(3, title="Stoch RSI %K Smoothing", minval=1)
+smoothD = input(3, title="Stoch RSI %D Smoothing", minval=1)
+
+// Calculate Stoch RSI
+rsiValue = rsi(close, lengthRSI)
+k = sma(stoch(rsiValue, rsiValue, rsiValue, lengthRSI), smoothK)
+d = sma(k, smoothD)
+
+// Buy and Sell Signals based on Stoch RSI
+buyp = priceChange >= length and k < rsi_length
+sellp = priceChange <= -length and k > rsi_length
+
+// Initialize position and track the current position
+var int position = na
+var float entryPrice = na
+
+// Strategy entry conditions
+buy_condition = buyp and (na(position) or position == -1)
+sell_condition = sellp and (na(position) or position == 1)
+
+if buy_condition
+    strategy.entry("Buy", strategy.long)
+    position := 1
+    entryPrice := close
+
+if sell_condition
+    strategy.entry("Sell", strategy.short)
+    position := -1
+    entryPrice := close
+
+// Check for inverse signal to exit the trade
+if (position == 1)
+    if sell_condition
+        strategy.exit("Exit", "Buy", stop=entryPrice) // 1% stop loss
+        entryPrice := na
+
+if (position == -1)
+    if buy_condition
+        strategy.exit("Exit", "Sell", stop=entryPrice) // 4% take profit
+        entryPrice := na
+
+// Plot Buy and Sell signals using plotshape
+plotshape(series=buy_condition, title="Buy Signal", location=location.belowbar, color=color.green, style=shape.triangleup, size=size.small)
+plotshape(series=sell_condition, title="Sell Signal", location=location.abovebar, color=color.red, style=shape.triangledown, size=size.small)
